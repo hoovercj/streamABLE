@@ -25,12 +25,17 @@ interface RegionResult {
     text: string;
 }
 
+const SCREENREADER_CONTAINER_ID = 'streamable-screenreader-content';
 const BUFFER_CANVAS_ID = 'streamable-buffer';
 const NORMALIZED_WIDTH = 1920;
 const NORMALIZED_HEIGHT = 1080;
 let initialized = false;
+let sourceVideo: HTMLVideoElement | null;
 let bufferCanvas: HTMLCanvasElement;
+let screenreaderContainer: HTMLDivElement;
 let canvasContext: CanvasRenderingContext2D | null;
+
+let analyzeInterval: number | undefined;
 
 let readyStateCheckInterval = setInterval(function () {
     if (document.readyState === 'complete') {
@@ -48,10 +53,36 @@ async function initialize() {
     bufferCanvas.id = BUFFER_CANVAS_ID;
     canvasContext = bufferCanvas.getContext('2d');
 
-    window['analyzeVideo'] = analyzeVideo;
+    screenreaderContainer = document.createElement('div');
+    screenreaderContainer.id = SCREENREADER_CONTAINER_ID;
+    screenreaderContainer.className = 'screenreader';
+
+    exposeApi();
 
     initialized = true;
     Logger.log('[StreamABLE] Initialized.');
+}
+
+function exposeApi() {
+    window['analyzeVideo'] = analyzeVideo;
+    window['analyzeAndRender'] = analyzeAndRender;
+    window['startAnalyzeLoop'] = startAnalyzeLoop;
+    window['stopAnalyzeLoop'] = stopAnalyzeLoop;
+}
+
+function startAnalyzeLoop() {
+    stopAnalyzeLoop();
+    analyzeInterval = window.setInterval(analyzeAndRender, 5000);
+}
+
+function stopAnalyzeLoop() {
+    window.clearInterval(analyzeInterval);
+    analyzeInterval = undefined;
+}
+
+async function analyzeAndRender(): Promise<void> {
+    const results = await analyzeVideo();
+    renderResults(screenreaderContainer, results);
 }
 
 async function analyzeVideo(): Promise<RegionResult[]> {
@@ -60,20 +91,20 @@ async function analyzeVideo(): Promise<RegionResult[]> {
         return [];
     }
 
-    const video = document.querySelector('video');
+    sourceVideo = document.querySelector('video');
 
-    if (!canvasContext || !video || !video.style) {
+    if (!canvasContext || !sourceVideo || !sourceVideo.style) {
         Logger.log('[StreamABLE] Analyze Video - Missing canvas or video.');
         return [];
     }
 
-    const videoWidth = video.videoWidth;
-    const videoHeight = video.videoHeight;
+    const videoWidth = sourceVideo.videoWidth;
+    const videoHeight = sourceVideo.videoHeight;
     Logger.log(`[StreamABLE] Analyze Video - video is ${videoWidth} by ${videoHeight}`);
 
     bufferCanvas.width = videoWidth;
     bufferCanvas.height = videoHeight;
-    canvasContext.drawImage(video, 0, 0, videoWidth, videoHeight);
+    canvasContext.drawImage(sourceVideo, 0, 0, videoWidth, videoHeight);
 
     Logger.log('[StreamABLE] Analyze Video - Read mat from image data...');
     const mat = cv.matFromImageData(canvasContext.getImageData(0, 0, videoWidth, videoHeight));
@@ -154,12 +185,32 @@ function getTesseractOptions(type: DataType) {
     };
 }
 
-function matchTemplate(buffer: Mat, template: Mat) {
-    cv.matchTemplate(buffer, template, buffer, cv.TM_CCOEFF);
-    let minMaxLoc = cv.minMaxLoc(buffer);
-    let maxPoint = minMaxLoc.maxLoc;
-    let color = new cv.Scalar(255, 0, 0, 255);
-    let point = new cv.Point(maxPoint.x + template.cols, maxPoint.y + template.rows);
-    cv.rectangle(buffer, maxPoint, point, color, 2, cv.LINE_8, 0);
-    cv.imshow(bufferCanvas, buffer);
+function getResultContainerId(name: string): string {
+    return `${SCREENREADER_CONTAINER_ID}-${name.replace(/\W+/g, '-')}`;
+}
+
+function renderResults(container: HTMLElement, results: RegionResult[]) {
+    if (!container || !results) {
+        return;
+    }
+
+    let id: string;
+    let element: HTMLDivElement | null;
+    for (let i = 0; i < results.length; i++) {
+        let { name, text } = results[i];
+        id = getResultContainerId(name);
+
+        element = container.querySelector(`[id=${id}]`);
+        if (!element) {
+            element = document.createElement('div');
+            element.id = id;
+            container.appendChild(element);
+        }
+
+        element.textContent = `${name}. ${text}`;
+    }
+
+    if (sourceVideo && sourceVideo.parentElement) {
+        sourceVideo.parentElement.insertBefore(screenreaderContainer, sourceVideo);
+    }
 }

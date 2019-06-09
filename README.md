@@ -1,81 +1,73 @@
 # StreamABLE
 
-Expose info from video game streams to visually impaired viewers.
+People are increasingly spending their time watching streamers play video games on platforms like YouTube and Twitch. Games like Minecraft, League of Legends, and Fortnite are even more popular than shows like Game of Thrones. Both online and in-person communities are built around these games. However, this provides unique challenges for those with visual impairments who wish to participate in these communities.
 
-Currently works with League of Legends tournament overlays. The regions are defined in `app/lib/lol-tournament.ts`.
+![LCS SummerL 100 Thieves vs Clutch Gaming. 106,538 current viewers. 1,145,616,789 total viewers.](/docs/images/lol-viewer-count.png)
 
-## Installation
-	$ npm install
+Take this League of Legends tournament stream, for example: It has over 100,000 concurrent viewers and over a million views in total. While the commentary on its own is entertaining, there is a lot of visual information on the screen that is not available to people who can't see it. The goal of this project is to make it easy for anyone (game companies, streamers, sighted allies, etc.) to tag this information and empower visually impaired viewers to more fully participate in streaming communities.
 
-## Usage
+## Proof-of-Concept
 
-* Run `$ gulp --watch`
-* Load the `dist`-directory into chrome.
-* Open a League of Legends stream with the tournament overlay
-* Open the chrome devtools and switch to the "StreamABLE" console context
-* Run: `analyzeVideo().then(console.log)` and view the results
+The current proof-of-concept works on Twitch and Youtube with any stream that uses the League of Legends tournament overlay shown below:
 
-## Entryfiles (bundles)
+![Leage of Legends tournament overlay with information highlighted.](/docs/images/lol-tournament-hud.png)
 
-There are two kinds of entryfiles that create bundles.
+The extension analyzes the stream and renders hidden text to the DOM that the user can then find with a screenreader:
 
-1. All ts-files in the root of the `./app/scripts` directory
-2. All css-,scss- and less-files in the root of the `./app/styles` directory
-
-## Tasks
-
-### Build
-
-    $ gulp
-
-
-| Option         | Description                                                                                                                                           |
-|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `--watch`      | Starts a livereload server and watches all assets. <br>To reload the extension on change include `livereload.js` in your bundle.                      |
-| `--production` | Minifies all assets                                                                                                                                   |
-| `--verbose`    | Log additional data to the console.                                                                                                                   |
-| `--vendor`     | Compile the extension for different vendors (chrome, firefox, opera, edge)  Default: chrome                                                                 |
-| `--sourcemaps` | Force the creation of sourcemaps. Default: !production                                                                                                |
-
-
-### pack
-
-Zips your `dist` directory and saves it in the `packages` directory.
-
-    $ gulp pack --vendor=firefox
-
-### Version
-
-Increments version number of `manifest.json` and `package.json`,
-commits the change to git and adds a git tag.
-
-
-    $ gulp patch      // => 0.0.X
-
-or
-
-    $ gulp feature    // => 0.X.0
-
-or
-
-    $ gulp release    // => X.0.0
-
-
-## Globals
-
-The build tool also defines a variable named `process.env.NODE_ENV` in your scripts. It will be set to `development` unless you use the `--production` option.
-
-
-**Example:** `./app/background.ts`
-
-```typescript
-if(process.env.NODE_ENV === 'development'){
-  console.log('We are in development mode!');
-}
+```html
+<div id="streamable-screenreader-content" class="screenreader">
+  <div id="streamable-screenreader-content-Time">Time. 06:53</div>
+  <div id="streamable-screenreader-content-Kills-Blue-team">
+    Kills: Blue team. 0
+  </div>
+  <div id="streamable-screenreader-content-Kills-Red-team">
+    Kills: Red team. 1
+  </div>
+  <div id="streamable-screenreader-content-Gold-Blue-team">
+    Gold: Blue team. 9.7k
+  </div>
+  <div id="streamable-screenreader-content-Gold-Red-team">
+    Gold: Red team. 11.2k
+  </div>
+  <div id="streamable-screenreader-content-Name-Blue-team">
+    Name: Blue team. 100
+  </div>
+  <div id="streamable-screenreader-content-Name-Red-team">
+    Name: Red team. CG
+  </div>
+</div>
 ```
 
+## Roadmap
+
+The immediate focus of this project is to tackle the low-hanging fruit of statically-placed, textual information in game UIs. Things such as kill counts, timers, and scores. This project aims to make it as easy as possible to add immediate value without needing to gather large data sets or write any code. This means that more advanced techniques relying on template matching or machine learning are out of the scope of this project in the short term. However, as the streaming audience grows and more viewers are empowered to participate by this technology, there will be more incentive to invest in specialized solutions catered to individual games.
+
+### Template Creator
+The extension will allow sighted users to create and edit templates by highlighting regions of the screen, labeling them, and classifying them as text, numbers, timers, etc.
+
+### Settings and Customization
+Users should be able to fully customize their experience:
+* Easily import templates
+* Disable, rename, or set a new type for each region
+* Configure the refresh rate, or disable auto-update entirely
+* Mark important fields to be read automatically when they change
+
+## Get Started
 
 
+### Usage
+- Run `$ npm install`
+- Run `$ gulp --watch`
+- Load the `dist`-directory into chrome.
+- Open a League of Legends stream with the tournament overlay
+- Open the chrome devtools and switch to the "StreamABLE" console context
+- Analyze the video feed:
+    - Run: `analyzeAndRender()` to analyze it once
+    - Run: `startAnalyzeLoop()` to analyze the video every few seconds
+- View the output:
+    - Use `document.getElementById('streamable-screenreader-content')` to manually inspect values in the DOM
+    - Use screenreader shortcuts to search for the hidden content
 
+## Contributing
 
-
+See [CONTRIBUTING](/docs/CONTRIBUTING.md) for more info.
