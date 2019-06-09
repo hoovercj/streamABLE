@@ -4,7 +4,7 @@ People are increasingly spending their time watching streamers play video games 
 
 ![LCS SummerL 100 Thieves vs Clutch Gaming. 106,538 current viewers. 1,145,616,789 total viewers.](/docs/images/lol-viewer-count.png)
 
-Take this League of Legends tournament stream, for example: It has over 100,000 concurrent viewers and over a million views in total. While the commentary on its own is entertaining, there is a lot of visual information on the screen that is not available to people who can't see it. The goal of this project is to make it easy for anyone (game companies, streamers, sighted allies, etc.) to tag this information and empower visually impaired viewers to more fully participate in streaming communities.
+Take the official League of Legends stream on Twitch, for example: It often has over 100,000 concurrent viewers and over a billion views in total. While the commentary on its own is entertaining, there is a lot of visual information on the screen that is not available to people who can't see it. The goal of this project is to make it easy for anyone (game companies, streamers, sighted allies, etc.) to tag this information and empower visually impaired viewers to more fully participate in streaming communities.
 
 ## Proof-of-Concept
 
