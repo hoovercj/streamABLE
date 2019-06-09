@@ -1,0 +1,36 @@
+{
+  "name": "__MSG_appName__",
+  "short_name": "__MSG_appShortName__",
+  "description": "__MSG_appDescription__",
+  "version": "0.0.0",
+  "manifest_version": 2,
+  "default_locale": "en",
+  "icons": {
+    "16": "images/icon-16.png",
+    "128": "images/icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://www.twitch.tv/*"
+      ],
+      "css": [
+        "styles/youtube.css"
+      ]
+    },
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://www.twitch.tv/*"
+      ],
+      "js": [
+        "vendor/opencv.js",
+        "scripts/youtube.js"
+      ]
+    }
+  ],
+  "permissions": [
+    "storage"
+  ]
+}
