@@ -52,6 +52,11 @@ Users should be able to fully customize their experience:
 * Configure the refresh rate, or disable auto-update entirely
 * Mark important fields to be read automatically when they change
 
+### No AND Low Vision
+Users of all abilities should be able to enjoy video game streams
+* Make text available to screenreaders
+* "Zoom" in on small text for low-vision users
+
 ## Get Started
 
 
